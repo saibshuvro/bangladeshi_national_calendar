@@ -4,7 +4,7 @@ class DateTimeBN {
   constructor() {
     if (DateTimeBN.instance) return DateTimeBN.instance;
 
-    // Step 1: Store UTC and BST dates
+    // Step 1: Store BST dates
     this.captureDateTimes();
 
     // Step 2: Compute Bangla date using BST date
@@ -13,21 +13,16 @@ class DateTimeBN {
     DateTimeBN.instance = this;
   }
 
-  // --- Capture UTC and BST dates ---
+  // --- Capture BST dates ---
   captureDateTimes() {
-    this.utcDate = new Date(); // UTC date-time
-    const offsetMillis = 6 * 60 * 60 * 1000;
-    this.bstDate = new Date(this.utcDate.getTime() + offsetMillis);
-    console.log(this.bstDate); // BST = UTC + 6
+    this.bstDate = new Date();
+    console.log(this.bstDate);
   }
 
   convertToBanglaDate(date) {
     const gYear = date.getFullYear();
-    const gMonth = date.getMonth();
-    const gDay = date.getDate();
 
-    this.bengaliNewYear = new Date(Date.UTC(gYear, 3, 13, 18, 0, 0) + (6 * 60 * 60 * 1000));
-    // 14 April 00:00 BST
+    this.bengaliNewYear = new Date(gYear, 3, 14);
 
     let banglaYear;
     if (date < this.bengaliNewYear) {
@@ -110,7 +105,6 @@ function populateCalendarGrid() {
 
   const today = new DateTimeBN();
   const banglaMonthName = today.banglaDate.month;
-  const banglaYear = today.banglaDate.year;
 
   // Get Gregorian date of Bangla ১ তারিখ
   const startDate = today.getGregorianDateOfBanglaMonthStart(banglaMonthName);
