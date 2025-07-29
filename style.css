@@ -135,3 +135,10 @@ body {
   padding: 10px;
   color: #ffffff;
 }
+
+.calendar-cell.today {
+  background-color: #b3e5fc; /* light blue */
+  border: 2px solid #0288d1; /* deep blue border */
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(3, 169, 244, 0.4);
+}

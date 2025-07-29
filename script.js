@@ -4,16 +4,21 @@ class DateTimeBN {
   constructor() {
     if (DateTimeBN.instance) return DateTimeBN.instance;
 
-    this.bstDate = this.getCurrentBSTDate();
+    // Step 1: Store UTC and BST dates
+    this.captureDateTimes();
+
+    // Step 2: Compute Bangla date using BST date
     this.banglaDate = this.convertToBanglaDate(this.bstDate);
 
     DateTimeBN.instance = this;
   }
 
-  getCurrentBSTDate() {
-    const nowUTC = new Date();
+  // --- Capture UTC and BST dates ---
+  captureDateTimes() {
+    this.utcDate = new Date(); // UTC date-time
     const offsetMillis = 6 * 60 * 60 * 1000;
-    return new Date(nowUTC.getTime() + offsetMillis);
+    this.bstDate = new Date(this.utcDate.getTime() + offsetMillis);
+    console.log(this.bstDate); // BST = UTC + 6
   }
 
   convertToBanglaDate(date) {
@@ -21,16 +26,17 @@ class DateTimeBN {
     const gMonth = date.getMonth();
     const gDay = date.getDate();
 
-    const bengaliNewYear = new Date(gYear, 3, 14); // 14 April
+    this.bengaliNewYear = new Date(Date.UTC(gYear, 3, 13, 18, 0, 0) + (6 * 60 * 60 * 1000));
+    // 14 April 00:00 BST
 
     let banglaYear;
-    if (date < bengaliNewYear) {
+    if (date < this.bengaliNewYear) {
       banglaYear = gYear - 594;
     } else {
       banglaYear = gYear - 593;
     }
 
-    let daysSinceBoishakhStart = Math.round((date - bengaliNewYear) / (1000 * 60 * 60 * 24));
+    let daysSinceBoishakhStart = Math.floor((date - this.bengaliNewYear) / (1000 * 60 * 60 * 24));
     if (daysSinceBoishakhStart < 0) {
       daysSinceBoishakhStart += 365;
     }
@@ -45,9 +51,9 @@ class DateTimeBN {
   }
 
   calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear) {
-    const isLeap = banglaYear % 4 === 2;
+    this.isLeap = banglaYear % 4 === 2;
 
-    const banglaMonths = [
+    this.banglaMonths = [
       { name: 'Boishakh', days: 31 },
       { name: 'Joishtho', days: 31 },
       { name: 'Ashar', days: 31 },
@@ -58,14 +64,14 @@ class DateTimeBN {
       { name: 'Ogrohayon', days: 30 },
       { name: 'Poush', days: 30 },
       { name: 'Magh', days: 30 },
-      { name: 'Falgun', days: isLeap ? 30 : 29 },
+      { name: 'Falgun', days: this.isLeap ? 30 : 29 },
       { name: 'Chaitro', days: 30 },
     ];
 
     let remainingDays = daysSinceBoishakhStart;
 
-    for (let i = 0; i < banglaMonths.length; i++) {
-      const month = banglaMonths[i];
+    for (let i = 0; i < this.banglaMonths.length; i++) {
+      const month = this.banglaMonths[i];
       if (remainingDays < month.days) {
         return {
           month: month.name,
@@ -78,37 +84,16 @@ class DateTimeBN {
     return { month: 'Boishakh', day: 1 };
   }
 
-  getGregorianDateOfBanglaMonthStart(banglaYear, banglaMonthName) {
-    const isLeap = banglaYear % 4 === 2;
-
-    const banglaMonths = [
-      { name: 'Boishakh', days: 31 },
-      { name: 'Joishtho', days: 31 },
-      { name: 'Ashar', days: 31 },
-      { name: 'Srabon', days: 31 },
-      { name: 'Bhadro', days: 31 },
-      { name: 'Ashwin', days: 31 },
-      { name: 'Kartik', days: 30 },
-      { name: 'Ogrohayon', days: 30 },
-      { name: 'Poush', days: 30 },
-      { name: 'Magh', days: 30 },
-      { name: 'Falgun', days: isLeap ? 30 : 29 },
-      { name: 'Chaitro', days: 30 },
-    ];
-
-    // Step 1: Get the Bengali New Year (Boishakh ১) as Gregorian date
-    const gYearEstimate = this.bstDate.getFullYear()
-    const boishakhStart = new Date(gYearEstimate, 3, 14); // 14 April
-
+  getGregorianDateOfBanglaMonthStart(banglaMonthName) {
     // Step 2: Count days to the target month
     let dayOffset = 0;
-    for (const month of banglaMonths) {
+    for (const month of this.banglaMonths) {
       if (month.name === banglaMonthName) break;
       dayOffset += month.days;
     }
 
     // Step 3: Return Gregorian date of ১ of target Bangla month
-    return new Date(boishakhStart.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
   }
 }
 
@@ -128,7 +113,7 @@ function populateCalendarGrid() {
   const banglaYear = today.banglaDate.year;
 
   // Get Gregorian date of Bangla ১ তারিখ
-  const startDate = today.getGregorianDateOfBanglaMonthStart(banglaYear, banglaMonthName);
+  const startDate = today.getGregorianDateOfBanglaMonthStart(banglaMonthName);
   const startWeekday = startDate.getDay(); // 0 = Sunday, ..., 6 = Saturday
 
   // Start from the Sunday of that week (or earlier days of previous Bangla month)
@@ -161,11 +146,10 @@ function populateCalendarGrid() {
     cell.appendChild(engDiv);
     container.appendChild(cell);
   }
-// Display Bangla month and year
-const header = document.getElementById('bangla-month-year');
-header.innerText = `${today.banglaDate.month} ${toBanglaNumber(today.banglaDate.year)}`;
+  // Display Bangla month and year
+  const header = document.getElementById('bangla-month-year');
+  header.innerText = `${today.banglaDate.month} ${toBanglaNumber(today.banglaDate.year)}`;
 }
-
 
 // --- Toggle sidebar ---
 document.getElementById("menu-toggle").addEventListener("click", function () {
