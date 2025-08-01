@@ -14,6 +14,8 @@ body {
 }
 
 #menu-toggle {
+  position: relative;
+  z-index: 1001; /* higher than the sidebar's 999 */
   font-size: 24px;
   background: none;
   color: white;
@@ -73,7 +75,7 @@ body {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(5, 100px);
+  grid-template-rows: repeat(6, 100px);
   gap: 1px;
   background-color: #333;
 }
@@ -141,4 +143,63 @@ body {
   border: 2px solid #0288d1; /* deep blue border */
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(3, 169, 244, 0.4);
+}
+
+/* Container for the month navigation row */
+.calendar-header {
+  display: flex;
+  justify-content: center; /* Center the items horizontally */
+  align-items: center;     /* Center items vertically */
+  gap: 10px;               /* Space between buttons and text */
+  margin-bottom: 10px;
+}
+
+.calendar-header button {
+  background-color: #2a2a2a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.calendar-header button:hover {
+  background-color: #444;
+}
+
+/* Modal background */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+/* Modal box */
+.modal-content {
+  background: #1f1f1f;
+  color: white;
+  margin: 15% auto;
+  padding: 20px;
+  width: 300px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-content input[type="date"] {
+  padding: 6px;
+  margin-top: 10px;
+  font-size: 16px;
+}
+
+.close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+.close:hover {
+  color: red;
 }

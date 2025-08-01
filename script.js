@@ -1,21 +1,21 @@
+let currentToday;
+
 class DateTimeBN {
-  static instance = null;
-
-  constructor() {
-    if (DateTimeBN.instance) return DateTimeBN.instance;
-
-    // Step 1: Store BST dates
-    this.captureDateTimes();
+  constructor(givenDate = null) {
+    // Step 1: Store BST date
+    this.captureDateTimes(givenDate);
 
     // Step 2: Compute Bangla date using BST date
     this.banglaDate = this.convertToBanglaDate(this.bstDate);
-
-    DateTimeBN.instance = this;
   }
 
-  // --- Capture BST dates ---
-  captureDateTimes() {
-    this.bstDate = new Date();
+  // --- Capture BST date ---
+  captureDateTimes(givenDate) {
+    if (givenDate === null) {
+      this.bstDate = new Date();
+    } else {
+      this.bstDate = new Date(givenDate);
+    }
     console.log(this.bstDate);
   }
 
@@ -46,8 +46,8 @@ class DateTimeBN {
   }
 
   calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear) {
-    this.isLeap = banglaYear % 4 === 2;
-
+    this.isLeap = banglaYear % 4 === 3;
+    
     this.banglaMonths = [
       { name: 'Boishakh', days: 31 },
       { name: 'Joishtho', days: 31 },
@@ -90,6 +90,44 @@ class DateTimeBN {
     // Step 3: Return Gregorian date of ১ of target Bangla month
     return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
   }
+
+  // getNextBanglaMonthStart() {
+  //   // Find the index of the current Bangla month
+  //   const currentMonthIndex = this.banglaMonths.findIndex(
+  //     m => m.name === this.banglaDate.month
+  //   );
+
+  //   // Determine the next month index (wrap around to 0 if last month)
+  //   const nextMonthIndex = (currentMonthIndex + 1) % this.banglaMonths.length;
+
+  //   // Calculate day offset to the next month
+  //   let dayOffset = 0;
+  //   for (let i = 0; i < nextMonthIndex; i++) {
+  //     dayOffset += this.banglaMonths[i].days;
+  //   }
+
+  //   // Return Gregorian date for ১ তারিখ of next Bangla month
+  //   return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+  // }
+
+  // getPreviousBanglaMonthStart() {
+  //   // Find the index of the current Bangla month
+  //   const currentMonthIndex = this.banglaMonths.findIndex(
+  //     m => m.name === this.banglaDate.month
+  //   );
+
+  //   // Determine the previous month index (wrap around to last month if first month)
+  //   const prevMonthIndex = (currentMonthIndex - 1 + this.banglaMonths.length) % this.banglaMonths.length;
+
+  //   // Calculate day offset to the previous month
+  //   let dayOffset = 0;
+  //   for (let i = 0; i < prevMonthIndex; i++) {
+  //     dayOffset += this.banglaMonths[i].days;
+  //   }
+
+  //   // Return Gregorian date for ১ তারিখ of previous Bangla month
+  //   return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+  // }
 }
 
 // --- Utility: Convert English number to Bangla ---
@@ -99,11 +137,12 @@ function toBanglaNumber(number) {
 }
 
 // --- Populate calendar grid ---
-function populateCalendarGrid() {
+function populateCalendarGrid(selectedDate = null) {
   const container = document.getElementById('calendar-grid');
   container.innerHTML = ""; // Clear previous cells
 
-  const today = new DateTimeBN();
+  const today = new DateTimeBN(selectedDate);
+  currentToday = today;
   const banglaMonthName = today.banglaDate.month;
 
   // Get Gregorian date of Bangla ১ তারিখ
@@ -115,7 +154,7 @@ function populateCalendarGrid() {
   calendarStartDate.setDate(startDate.getDate() - startWeekday); // Go back to Sunday
 
   // Render 35 calendar cells (5 weeks)
-  for (let i = 0; i < 35; i++) {
+  for (let i = 0; i < 42; i++) {
     const currentDate = new Date(calendarStartDate);
     currentDate.setDate(calendarStartDate.getDate() + i);
 
@@ -152,3 +191,47 @@ document.getElementById("menu-toggle").addEventListener("click", function () {
 
 // --- Load calendar ---
 populateCalendarGrid();
+
+
+// Modal elements
+const modal = document.getElementById("date-modal");
+const goToDate = document.getElementById("go-to-date");
+const closeBtn = document.querySelector(".close");
+const goBtn = document.getElementById("go-btn");
+const datePicker = document.getElementById("date-picker");
+
+// Open modal on click
+goToDate.addEventListener("click", (e) => {
+  e.preventDefault();
+  modal.style.display = "block";
+});
+
+// Close modal
+closeBtn.onclick = () => modal.style.display = "none";
+
+// Close modal if clicked outside
+window.onclick = (e) => {
+  if (e.target === modal) modal.style.display = "none";
+};
+
+// Handle date selection
+goBtn.addEventListener("click", () => {
+  const selectedDate = datePicker.value;
+  if (selectedDate) {
+    // alert("You selected: " + selectedDate); 
+    // Here, you can call your calendar function to go to this date
+    populateCalendarGrid(selectedDate);
+    modal.style.display = "none";
+  }
+});
+
+// const previousMonthBtn = document.getElementById("previous-month-btn");
+// const nextMonthBtn = document.getElementById("next-month-btn");
+
+// previousMonthBtn.addEventListener("click", () => {
+//   populateCalendarGrid(currentToday.getPreviousBanglaMonthStart());
+// });
+
+// nextMonthBtn.addEventListener("click", () => {
+//   populateCalendarGrid(currentToday.getNextBanglaMonthStart());
+// });

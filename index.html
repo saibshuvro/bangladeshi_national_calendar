@@ -14,16 +14,28 @@
 
   <aside class="sidebar" id="sidebar">
     <ul>
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Events</a></li>
-      <li><a href="#">Holidays</a></li>
-      <li><a href="#">Settings</a></li>
+      <li><a href="/index.html">Today</a></li>
+      <li><a href="#" id="go-to-date">Go To Date</a></li>
     </ul>
   </aside>
 
+  <!-- Modal -->
+  <div id="date-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Select a Date</h2>
+      <input type="date" id="date-picker">
+      <button id="go-btn">Go</button>
+    </div>
+  </div>
+
   <main class="calendar-container">
-    <div id="bangla-month-year" class="bangla-month-year">
-      <!-- JS will insert Bangla month and year here -->
+    <div class="calendar-header">
+      <button id="previous-month-btn">&lt;</button>
+      <div id="bangla-month-year" class="bangla-month-year">
+        <!-- JS will insert Bangla month and year here -->
+      </div>
+      <button id="next-month-btn">&gt;</button>
     </div>
     <div class="day-names">
       <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
