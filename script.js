@@ -1,3 +1,5 @@
+import { convertToBanglaDate, getGregorianDateOfBanglaMonthStart, getNextBanglaMonthStart, getPreviousBanglaMonthStart } from './utils.js';
+
 let currentToday;
 
 class DateTimeBN {
@@ -6,7 +8,7 @@ class DateTimeBN {
     this.captureDateTimes(givenDate);
 
     // Step 2: Compute Bangla date using BST date
-    this.banglaDate = this.convertToBanglaDate(this.bstDate);
+    this.banglaDate = convertToBanglaDate(this.bstDate);
   }
 
   // --- Capture BST date ---
@@ -19,115 +21,6 @@ class DateTimeBN {
     console.log(this.bstDate);
   }
 
-  convertToBanglaDate(date) {
-    const gYear = date.getFullYear();
-
-    this.bengaliNewYear = new Date(gYear, 3, 14);
-
-    let banglaYear;
-    if (date < this.bengaliNewYear) {
-      banglaYear = gYear - 594;
-    } else {
-      banglaYear = gYear - 593;
-    }
-
-    let daysSinceBoishakhStart = Math.floor((date - this.bengaliNewYear) / (1000 * 60 * 60 * 24));
-    if (daysSinceBoishakhStart < 0) {
-      daysSinceBoishakhStart += 365;
-    }
-
-    const banglaMonthDay = this.calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear);
-
-    return {
-      year: banglaYear,
-      month: banglaMonthDay.month,
-      day: banglaMonthDay.day,
-    };
-  }
-
-  calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear) {
-    this.isLeap = banglaYear % 4 === 3;
-    
-    this.banglaMonths = [
-      { name: 'Boishakh', days: 31 },
-      { name: 'Joishtho', days: 31 },
-      { name: 'Ashar', days: 31 },
-      { name: 'Srabon', days: 31 },
-      { name: 'Bhadro', days: 31 },
-      { name: 'Ashwin', days: 31 },
-      { name: 'Kartik', days: 30 },
-      { name: 'Ogrohayon', days: 30 },
-      { name: 'Poush', days: 30 },
-      { name: 'Magh', days: 30 },
-      { name: 'Falgun', days: this.isLeap ? 30 : 29 },
-      { name: 'Chaitro', days: 30 },
-    ];
-
-    let remainingDays = daysSinceBoishakhStart;
-
-    for (let i = 0; i < this.banglaMonths.length; i++) {
-      const month = this.banglaMonths[i];
-      if (remainingDays < month.days) {
-        return {
-          month: month.name,
-          day: remainingDays + 1,
-        };
-      }
-      remainingDays -= month.days;
-    }
-
-    return { month: 'Boishakh', day: 1 };
-  }
-
-  getGregorianDateOfBanglaMonthStart(banglaMonthName) {
-    // Step 2: Count days to the target month
-    let dayOffset = 0;
-    for (const month of this.banglaMonths) {
-      if (month.name === banglaMonthName) break;
-      dayOffset += month.days;
-    }
-
-    // Step 3: Return Gregorian date of ১ of target Bangla month
-    return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-  }
-
-  // getNextBanglaMonthStart() {
-  //   // Find the index of the current Bangla month
-  //   const currentMonthIndex = this.banglaMonths.findIndex(
-  //     m => m.name === this.banglaDate.month
-  //   );
-
-  //   // Determine the next month index (wrap around to 0 if last month)
-  //   const nextMonthIndex = (currentMonthIndex + 1) % this.banglaMonths.length;
-
-  //   // Calculate day offset to the next month
-  //   let dayOffset = 0;
-  //   for (let i = 0; i < nextMonthIndex; i++) {
-  //     dayOffset += this.banglaMonths[i].days;
-  //   }
-
-  //   // Return Gregorian date for ১ তারিখ of next Bangla month
-  //   return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-  // }
-
-  // getPreviousBanglaMonthStart() {
-  //   // Find the index of the current Bangla month
-  //   const currentMonthIndex = this.banglaMonths.findIndex(
-  //     m => m.name === this.banglaDate.month
-  //   );
-
-  //   // Determine the previous month index (wrap around to last month if first month)
-  //   const prevMonthIndex = (currentMonthIndex - 1 + this.banglaMonths.length) % this.banglaMonths.length;
-
-  //   // Calculate day offset to the previous month
-  //   let dayOffset = 0;
-  //   for (let i = 0; i < prevMonthIndex; i++) {
-  //     dayOffset += this.banglaMonths[i].days;
-  //   }
-
-  //   // Return Gregorian date for ১ তারিখ of previous Bangla month
-  //   return new Date(this.bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-  // }
 }
 
 // --- Utility: Convert English number to Bangla ---
@@ -143,10 +36,9 @@ function populateCalendarGrid(selectedDate = null) {
 
   const today = new DateTimeBN(selectedDate);
   currentToday = today;
-  const banglaMonthName = today.banglaDate.month;
 
   // Get Gregorian date of Bangla ১ তারিখ
-  const startDate = today.getGregorianDateOfBanglaMonthStart(banglaMonthName);
+  const startDate = getGregorianDateOfBanglaMonthStart(today.bstDate, today.banglaDate.month, today.banglaDate.year);
   const startWeekday = startDate.getDay(); // 0 = Sunday, ..., 6 = Saturday
 
   // Start from the Sunday of that week (or earlier days of previous Bangla month)
@@ -158,7 +50,7 @@ function populateCalendarGrid(selectedDate = null) {
     const currentDate = new Date(calendarStartDate);
     currentDate.setDate(calendarStartDate.getDate() + i);
 
-    const banglaDate = today.convertToBanglaDate(currentDate);
+    const banglaDate = convertToBanglaDate(currentDate);
 
     const cell = document.createElement('div');
     cell.classList.add('calendar-cell');
@@ -199,6 +91,8 @@ const goToDate = document.getElementById("go-to-date");
 const closeBtn = document.querySelector(".close");
 const goBtn = document.getElementById("go-btn");
 const datePicker = document.getElementById("date-picker");
+const sidebar = document.getElementById("sidebar");
+const menuToggle = document.getElementById("menu-toggle");
 
 // Open modal on click
 goToDate.addEventListener("click", (e) => {
@@ -209,10 +103,21 @@ goToDate.addEventListener("click", (e) => {
 // Close modal
 closeBtn.onclick = () => modal.style.display = "none";
 
-// Close modal if clicked outside
-window.onclick = (e) => {
-  if (e.target === modal) modal.style.display = "none";
-};
+window.addEventListener("click", (e) => {
+  // Close modal if clicked outside
+  if (e.target === modal) {
+    modal.style.display = "none";
+  }
+
+  // Close sidebar if open and clicked outside
+  if (
+    sidebar.classList.contains("open") &&
+    !sidebar.contains(e.target) &&
+    e.target !== menuToggle
+  ) {
+    sidebar.classList.remove("open");
+  }
+});
 
 // Handle date selection
 goBtn.addEventListener("click", () => {
@@ -225,13 +130,13 @@ goBtn.addEventListener("click", () => {
   }
 });
 
-// const previousMonthBtn = document.getElementById("previous-month-btn");
-// const nextMonthBtn = document.getElementById("next-month-btn");
+const previousMonthBtn = document.getElementById("previous-month-btn");
+const nextMonthBtn = document.getElementById("next-month-btn");
 
-// previousMonthBtn.addEventListener("click", () => {
-//   populateCalendarGrid(currentToday.getPreviousBanglaMonthStart());
-// });
+previousMonthBtn.addEventListener("click", () => {
+  populateCalendarGrid(getPreviousBanglaMonthStart(currentToday));
+});
 
-// nextMonthBtn.addEventListener("click", () => {
-//   populateCalendarGrid(currentToday.getNextBanglaMonthStart());
-// });
+nextMonthBtn.addEventListener("click", () => {
+  populateCalendarGrid(getNextBanglaMonthStart(currentToday));
+});
