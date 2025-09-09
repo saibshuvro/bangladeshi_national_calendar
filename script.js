@@ -163,3 +163,13 @@ previousMonthBtn.addEventListener("click", () => {
 nextMonthBtn.addEventListener("click", () => {
   populateCalendarGrid(getNextBanglaMonthStart(currentToday));
 });
+
+
+// Select the button and body element
+const invertColorsBtn = document.getElementById('invert-colors-btn');
+const body = document.body;  // Apply to the body element
+
+// Event listener to toggle the 'invert-colors' class
+invertColorsBtn.addEventListener('click', () => {
+  body.classList.toggle('invert-colors');  // Toggle the class on the body
+});
