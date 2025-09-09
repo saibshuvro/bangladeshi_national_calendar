@@ -114,3 +114,45 @@ export function  getPreviousBanglaMonthStart(objDateTimeBN) {
     // Return Gregorian date for ১ তারিখ of next Bangla month
     return new Date(objDateTimeBN.bstDate.getTime() - dayOffset * 24 * 60 * 60 * 1000);
 }
+
+
+export function getEnglishMonths(objDate) {
+  const isLeap = objDate.getFullYear() % 4 === 0;
+
+  let englishMonths = [
+    { name: 'January', days: 31 },
+    { name: 'February', days: isLeap ? 29 : 28 },
+    { name: 'March', days: 31 },
+    { name: 'April', days: 30 },
+    { name: 'May', days: 31 },
+    { name: 'June', days: 30 },
+    { name: 'July', days: 31 },
+    { name: 'August', days: 31 },
+    { name: 'September', days: 30 },
+    { name: 'October', days: 31 },
+    { name: 'November', days: 30 },
+    { name: 'December', days: 31 },
+  ];
+  englishMonths[objDate.getMonth()]['year'] = objDate.getFullYear();
+  return englishMonths[objDate.getMonth()];
+}
+
+
+export function toBanglaName(banglaMonthName) {
+  console.log(banglaMonthName);
+  const banglaText = {
+    'Boishakh': 'বৈশাখ',
+    'Joishtho': 'জ্যৈষ্ঠ',
+    'Ashar': 'আষাঢ়',
+    'Srabon': 'শ্রাবণ',
+    'Bhadro': 'ভাদ্র',
+    'Ashwin': 'আশ্বিন',
+    'Kartik': 'কার্তিক',
+    'Ogrohayon': 'অগ্রহায়ণ',
+    'Poush': 'পৌষ',
+    'Magh': 'মাঘ',
+    'Falgun': 'ফাল্গুন',
+    'Chaitro': 'চৈত্র',
+  }
+  return banglaText[banglaMonthName];
+}

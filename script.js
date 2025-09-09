@@ -1,4 +1,11 @@
-import { convertToBanglaDate, getGregorianDateOfBanglaMonthStart, getNextBanglaMonthStart, getPreviousBanglaMonthStart } from './utils.js';
+import { 
+  convertToBanglaDate,
+  getGregorianDateOfBanglaMonthStart,
+  getNextBanglaMonthStart,
+  getPreviousBanglaMonthStart,
+  getEnglishMonths,
+  toBanglaName
+} from './utils.js';
 
 let currentToday;
 
@@ -45,6 +52,13 @@ function populateCalendarGrid(selectedDate = null) {
   const calendarStartDate = new Date(startDate);
   calendarStartDate.setDate(startDate.getDate() - startWeekday); // Go back to Sunday
 
+  let temp = [];
+  temp.push(getEnglishMonths(calendarStartDate));
+  const nextMonthDate = new Date(calendarStartDate);  // Clone the date to avoid modifying the original
+  nextMonthDate.setMonth(calendarStartDate.getMonth() + 1); // Set next month
+  temp.push(getEnglishMonths(nextMonthDate));  // Pass the new Date object
+  console.log(temp);
+
   // Render 35 calendar cells (5 weeks)
   for (let i = 0; i < 42; i++) {
     const currentDate = new Date(calendarStartDate);
@@ -65,7 +79,13 @@ function populateCalendarGrid(selectedDate = null) {
 
     const engDiv = document.createElement('div');
     engDiv.className = 'english-date';
-    engDiv.innerText = currentDate.getDate();
+    if (currentDate.getDate() === temp[0].days) {
+      engDiv.innerText = `${temp[0].name.slice(0, 3)} ${currentDate.getDate()}`;
+    } else if (currentDate.getDate() === 1) {
+      engDiv.innerText = `${temp[1].name.slice(0, 3)} ${currentDate.getDate()}`;
+    } else {
+      engDiv.innerText = currentDate.getDate();
+    }
 
     cell.appendChild(banglaDiv);
     cell.appendChild(engDiv);
@@ -73,7 +93,10 @@ function populateCalendarGrid(selectedDate = null) {
   }
   // Display Bangla month and year
   const header = document.getElementById('bangla-month-year');
-  header.innerText = `${today.banglaDate.month} ${toBanglaNumber(today.banglaDate.year)}`;
+  header.innerText = `${toBanglaName(today.banglaDate.month)} ${toBanglaNumber(today.banglaDate.year)}`;
+
+  const subHeader = document.getElementById('english-month-year');
+  subHeader.innerText = `${temp[0].name} ${temp[0].year} - ${temp[1].name} ${temp[1].year}`;
 }
 
 // --- Toggle sidebar ---
