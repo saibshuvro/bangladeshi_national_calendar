@@ -9,7 +9,8 @@ export function isLeapYear(banglaYear) {
 export function getBanglaMonths(banglaYear) {
   const isLeap = isLeapYear(banglaYear);
 
-  return [
+  if (banglaYear >= 1426) {
+    return [
     { name: 'Boishakh', days: 31 },
     { name: 'Joishtho', days: 31 },
     { name: 'Ashar', days: 31 },
@@ -23,6 +24,22 @@ export function getBanglaMonths(banglaYear) {
     { name: 'Falgun', days: isLeap ? 30 : 29 },  // Adjust Falgun's days based on leap year
     { name: 'Chaitro', days: 30 },
   ];
+  } else {
+    return [
+    { name: 'Boishakh', days: 31 },
+    { name: 'Joishtho', days: 31 },
+    { name: 'Ashar', days: 31 },
+    { name: 'Srabon', days: 31 },
+    { name: 'Bhadro', days: 31 },
+    { name: 'Ashwin', days: 30 },
+    { name: 'Kartik', days: 30 },
+    { name: 'Ogrohayon', days: 30 },
+    { name: 'Poush', days: 30 },
+    { name: 'Magh', days: 30 },
+    { name: 'Falgun', days: isLeap ? 31 : 30 },  // Adjust Falgun's days based on leap year
+    { name: 'Chaitro', days: 30 },
+  ];
+  }
 }
 
 
