@@ -231,3 +231,75 @@ body {
 .calendar-cell.today .english-date {
   color: #414141;
 }
+
+
+/* Footer */
+.site-footer {
+  margin-top: auto;
+  background-color: #1f1f1f;
+  border-top: 1px solid #333;
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #bbb;
+}
+
+.site-footer__content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.site-footer a {
+  color: white;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.site-footer a:hover {
+  border-bottom-color: currentColor;
+}
+
+.footer-sep {
+  opacity: 0.6;
+}
+
+.footer-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: #1f1f1f;
+  transition: transform 120ms ease, border-color 120ms ease, background 120ms ease;
+}
+
+.footer-icon svg {
+  width: 18px;
+  height: 18px;
+  fill: #fff;
+  opacity: 0.9;
+}
+
+.footer-icon:hover {
+  transform: translateY(-1px);
+  border-color: #555;
+  background: #252525;
+}
+
+.footer-icon:focus-visible {
+  outline: 2px solid #7aa7ff;
+  outline-offset: 2px;
+}
+
+.footer-credit {
+  color: #bbb;
+  font-size: 22px;
+  /* opacity: 0.9; */
+  margin-right: 6px;
+  user-select: none;
+}
