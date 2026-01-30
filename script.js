@@ -116,6 +116,7 @@ const goBtn = document.getElementById("go-btn");
 const datePicker = document.getElementById("date-picker");
 const sidebar = document.getElementById("sidebar");
 const menuToggle = document.getElementById("menu-toggle");
+const goToToday = document.getElementById("go-to-today");
 
 // Open modal on click
 goToDate.addEventListener("click", (e) => {
@@ -163,6 +164,17 @@ previousMonthBtn.addEventListener("click", () => {
 nextMonthBtn.addEventListener("click", () => {
   populateCalendarGrid(getNextBanglaMonthStart(currentToday));
 });
+
+goToToday.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  // Jump to the real current date (no reload)
+  populateCalendarGrid();
+
+  // optional: close sidebar after click
+  sidebar.classList.remove("open");
+});
+
 
 
 // Select the button and body element
