@@ -1,31 +1,56 @@
-// utils.js
+const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
-// Function to check if a Bengali year is a leap year
-export function isLeapYear(banglaYear) {
-  return banglaYear % 4 === 2;  // Bengali leap year logic (leap year occurs every 4 years except years divisible by 100 but not by 400)
+const BANGLA_MONTH_NAMES = {
+  Boishakh: 'বৈশাখ',
+  Joishtho: 'জ্যৈষ্ঠ',
+  Ashar: 'আষাঢ়',
+  Srabon: 'শ্রাবণ',
+  Bhadro: 'ভাদ্র',
+  Ashwin: 'আশ্বিন',
+  Kartik: 'কার্তিক',
+  Ogrohayon: 'অগ্রহায়ণ',
+  Poush: 'পৌষ',
+  Magh: 'মাঘ',
+  Falgun: 'ফাল্গুন',
+  Chaitro: 'চৈত্র'
+};
+
+function toUtcDayNumber(date) {
+  return Math.floor(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MILLISECONDS_PER_DAY
+  );
 }
 
-// Function to get the Bangla months with the correct number of days
-export function getBanglaMonths(banglaYear) {
-  const isLeap = isLeapYear(banglaYear);
+function addCalendarDays(date, days) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days, 12);
+}
 
+// Falgun contains the leap day of the Gregorian year in which the Bangla year ends.
+export function isLeapYear(banglaYear) {
+  const gregorianYear = banglaYear + 594;
+  return gregorianYear % 4 === 0
+    && (gregorianYear % 100 !== 0 || gregorianYear % 400 === 0);
+}
+
+export function getBanglaMonths(banglaYear) {
   if (banglaYear >= 1426) {
     return [
-    { name: 'Boishakh', days: 31 },
-    { name: 'Joishtho', days: 31 },
-    { name: 'Ashar', days: 31 },
-    { name: 'Srabon', days: 31 },
-    { name: 'Bhadro', days: 31 },
-    { name: 'Ashwin', days: 31 },
-    { name: 'Kartik', days: 30 },
-    { name: 'Ogrohayon', days: 30 },
-    { name: 'Poush', days: 30 },
-    { name: 'Magh', days: 30 },
-    { name: 'Falgun', days: isLeap ? 30 : 29 },  // Adjust Falgun's days based on leap year
-    { name: 'Chaitro', days: 30 },
-  ];
-  } else {
-    return [
+      { name: 'Boishakh', days: 31 },
+      { name: 'Joishtho', days: 31 },
+      { name: 'Ashar', days: 31 },
+      { name: 'Srabon', days: 31 },
+      { name: 'Bhadro', days: 31 },
+      { name: 'Ashwin', days: 31 },
+      { name: 'Kartik', days: 30 },
+      { name: 'Ogrohayon', days: 30 },
+      { name: 'Poush', days: 30 },
+      { name: 'Magh', days: 30 },
+      { name: 'Falgun', days: isLeapYear(banglaYear) ? 30 : 29 },
+      { name: 'Chaitro', days: 30 }
+    ];
+  }
+
+  return [
     { name: 'Boishakh', days: 31 },
     { name: 'Joishtho', days: 31 },
     { name: 'Ashar', days: 31 },
@@ -36,140 +61,101 @@ export function getBanglaMonths(banglaYear) {
     { name: 'Ogrohayon', days: 30 },
     { name: 'Poush', days: 30 },
     { name: 'Magh', days: 30 },
-    { name: 'Falgun', days: isLeap ? 31 : 30 },  // Adjust Falgun's days based on leap year
-    { name: 'Chaitro', days: 30 },
+    { name: 'Falgun', days: isLeapYear(banglaYear) ? 31 : 30 },
+    { name: 'Chaitro', days: 30 }
   ];
-  }
 }
 
-
-// Function to convert Gregorian date to Bangla date
 export function convertToBanglaDate(englishDate) {
-  const gYear = englishDate.getFullYear();
-  let bengaliNewYear = new Date(gYear, 3, 14);  // Bengali New Year is on April 14th
-
+  const gregorianYear = englishDate.getFullYear();
+  let bengaliNewYear = new Date(gregorianYear, 3, 14, 12);
   let banglaYear;
-  if (englishDate < bengaliNewYear) {
-    banglaYear = gYear - 594;
-    bengaliNewYear = new Date(gYear-1, 3, 14);
+
+  if (toUtcDayNumber(englishDate) < toUtcDayNumber(bengaliNewYear)) {
+    banglaYear = gregorianYear - 594;
+    bengaliNewYear = new Date(gregorianYear - 1, 3, 14, 12);
   } else {
-    banglaYear = gYear - 593;
+    banglaYear = gregorianYear - 593;
   }
 
-  let daysSinceBoishakhStart = Math.floor((englishDate - bengaliNewYear) / (1000 * 60 * 60 * 24));
-
+  const daysSinceBoishakhStart =
+    toUtcDayNumber(englishDate) - toUtcDayNumber(bengaliNewYear);
   const banglaMonthDay = calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear);
 
   return {
     year: banglaYear,
     month: banglaMonthDay.month,
-    day: banglaMonthDay.day,
+    day: banglaMonthDay.day
   };
 }
 
-// Function to calculate Bangla month and day from the days since Boishakh start
 export function calculateBanglaMonthAndDay(daysSinceBoishakhStart, banglaYear) {
-  const banglaMonths = getBanglaMonths(banglaYear);
-
   let remainingDays = daysSinceBoishakhStart;
 
-  for (let i = 0; i < banglaMonths.length; i++) {
-    const month = banglaMonths[i];
+  for (const month of getBanglaMonths(banglaYear)) {
     if (remainingDays < month.days) {
       return {
         month: month.name,
-        day: remainingDays + 1,
+        day: remainingDays + 1
       };
     }
     remainingDays -= month.days;
   }
 
-  return { month: 'Boishakh', day: 1 };
+  throw new RangeError('Date falls outside the requested Bangla year.');
 }
 
+export function getGregorianDateOfBanglaMonthStart(
+  _englishDate,
+  banglaMonthName,
+  banglaYear
+) {
+  let dayOffset = 0;
 
-export function getGregorianDateOfBanglaMonthStart(englishDate, banglaMonthName, banglaYear) {
-    const banglaMonths = getBanglaMonths(banglaYear);
-    
-    let dayOffset = 0;
-    for (const month of banglaMonths) {
-        if (month.name === banglaMonthName) break;
-        dayOffset += month.days;
+  for (const month of getBanglaMonths(banglaYear)) {
+    if (month.name === banglaMonthName) {
+      const bengaliNewYear = new Date(banglaYear + 593, 3, 14, 12);
+      return addCalendarDays(bengaliNewYear, dayOffset);
     }
+    dayOffset += month.days;
+  }
 
-    const gYear = englishDate.getFullYear();
-    let bengaliNewYear = new Date(gYear, 3, 14);  // Bengali New Year is on April 14th
-
-    if (englishDate < bengaliNewYear) {
-        banglaYear = gYear - 594;
-        bengaliNewYear = new Date(gYear-1, 3, 14);
-    } else {
-        banglaYear = gYear - 593;
-    }
-
-    return new Date(bengaliNewYear.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+  throw new RangeError(`Unknown Bangla month: ${banglaMonthName}`);
 }
 
+export function getNextBanglaMonthStart(dateTimeBN) {
+  const currentMonth = getBanglaMonths(dateTimeBN.banglaDate.year)
+    .find((month) => month.name === dateTimeBN.banglaDate.month);
 
-export function getNextBanglaMonthStart(objDateTimeBN) {
-    const banglaMonths = getBanglaMonths(objDateTimeBN.banglaDate.year);
-    let dayOffset = 0;
-    for (let i = 0; i < banglaMonths.length; i++) {
-        if (banglaMonths[i].name === objDateTimeBN.banglaDate.month) {
-            dayOffset = (banglaMonths[i].days - objDateTimeBN.banglaDate.day) + 1;
-        }
-    }
+  if (!currentMonth) {
+    throw new RangeError(`Unknown Bangla month: ${dateTimeBN.banglaDate.month}`);
+  }
 
-    // Return Gregorian date for ১ তারিখ of next Bangla month
-    return new Date(objDateTimeBN.bstDate.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+  const daysUntilNextMonth = currentMonth.days - dateTimeBN.banglaDate.day + 1;
+  return addCalendarDays(dateTimeBN.bstDate, daysUntilNextMonth);
 }
 
+export function getPreviousBanglaMonthStart(dateTimeBN) {
+  let previousYear = dateTimeBN.banglaDate.year;
+  let currentMonthIndex = getBanglaMonths(previousYear)
+    .findIndex((month) => month.name === dateTimeBN.banglaDate.month);
 
-export function  getPreviousBanglaMonthStart(objDateTimeBN) {
-    let dayOffset = objDateTimeBN.banglaDate.day;
-    
-    // Return Gregorian date for ১ তারিখ of next Bangla month
-    return new Date(objDateTimeBN.bstDate.getTime() - dayOffset * 24 * 60 * 60 * 1000);
+  if (currentMonthIndex === -1) {
+    throw new RangeError(`Unknown Bangla month: ${dateTimeBN.banglaDate.month}`);
+  }
+
+  if (currentMonthIndex === 0) {
+    previousYear -= 1;
+    currentMonthIndex = 12;
+  }
+
+  const previousMonthDays = getBanglaMonths(previousYear)[currentMonthIndex - 1].days;
+  const daysSincePreviousMonthStart =
+    previousMonthDays + dateTimeBN.banglaDate.day - 1;
+
+  return addCalendarDays(dateTimeBN.bstDate, -daysSincePreviousMonthStart);
 }
-
-
-export function getEnglishMonths(objDate) {
-  const isLeap = objDate.getFullYear() % 4 === 0;
-
-  let englishMonths = [
-    { name: 'January', days: 31 },
-    { name: 'February', days: isLeap ? 29 : 28 },
-    { name: 'March', days: 31 },
-    { name: 'April', days: 30 },
-    { name: 'May', days: 31 },
-    { name: 'June', days: 30 },
-    { name: 'July', days: 31 },
-    { name: 'August', days: 31 },
-    { name: 'September', days: 30 },
-    { name: 'October', days: 31 },
-    { name: 'November', days: 30 },
-    { name: 'December', days: 31 },
-  ];
-  englishMonths[objDate.getMonth()]['year'] = objDate.getFullYear();
-  return englishMonths[objDate.getMonth()];
-}
-
 
 export function toBanglaName(banglaMonthName) {
-  console.log(banglaMonthName);
-  const banglaText = {
-    'Boishakh': 'বৈশাখ',
-    'Joishtho': 'জ্যৈষ্ঠ',
-    'Ashar': 'আষাঢ়',
-    'Srabon': 'শ্রাবণ',
-    'Bhadro': 'ভাদ্র',
-    'Ashwin': 'আশ্বিন',
-    'Kartik': 'কার্তিক',
-    'Ogrohayon': 'অগ্রহায়ণ',
-    'Poush': 'পৌষ',
-    'Magh': 'মাঘ',
-    'Falgun': 'ফাল্গুন',
-    'Chaitro': 'চৈত্র',
-  }
-  return banglaText[banglaMonthName];
+  return BANGLA_MONTH_NAMES[banglaMonthName];
 }

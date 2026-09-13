@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bangladeshinationalcalendar.vercel.app/sitemap.xml
