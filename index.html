@@ -1,72 +1,256 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn-BD">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bangladeshi National Calendar</title>
+  <title>আজকের বাংলা তারিখ | বাংলাদেশের বাংলা ক্যালেন্ডার</title>
+  <meta
+    name="description"
+    content="বাংলাদেশে প্রচলিত সংশোধিত নিয়মে আজকের বাংলা তারিখ দেখুন। বাংলা ও ইংরেজি তারিখসহ সহজ বাংলাদেশ বাংলা ক্যালেন্ডার।"
+  >
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#0b3d2e">
+  <link rel="canonical" href="https://bangladeshinationalcalendar.vercel.app/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="bn_BD">
+  <meta property="og:site_name" content="বাংলাদেশ বাংলা ক্যালেন্ডার">
+  <meta property="og:title" content="আজকের বাংলা তারিখ | বাংলাদেশের বাংলা ক্যালেন্ডার">
+  <meta
+    property="og:description"
+    content="বাংলাদেশে প্রচলিত সংশোধিত নিয়মে আজকের বাংলা তারিখ এবং বাংলা-ইংরেজি মাসের ক্যালেন্ডার দেখুন।"
+  >
+  <meta property="og:url" content="https://bangladeshinationalcalendar.vercel.app/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="আজকের বাংলা তারিখ | বাংলাদেশের বাংলা ক্যালেন্ডার">
+  <meta
+    name="twitter:description"
+    content="বাংলাদেশের সংশোধিত নিয়মে আজকের বাংলা তারিখ এবং মাসের ক্যালেন্ডার।"
+  >
+
+  <script>
+    try {
+      if (sessionStorage.getItem('calendar-theme') === 'light') {
+        document.documentElement.classList.add('light-theme');
+      }
+    } catch {
+      // The calendar still works when browser storage is unavailable.
+    }
+  </script>
   <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://bangladeshinationalcalendar.vercel.app/#website",
+        "url": "https://bangladeshinationalcalendar.vercel.app/",
+        "name": "বাংলাদেশ বাংলা ক্যালেন্ডার",
+        "alternateName": ["Bangladesh Bangla Calendar", "Bangladeshi National Calendar"],
+        "description": "বাংলাদেশে প্রচলিত সংশোধিত নিয়ম অনুসরণকারী বাংলা ক্যালেন্ডার।",
+        "inLanguage": "bn-BD"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://bangladeshinationalcalendar.vercel.app/#calendar-app",
+        "url": "https://bangladeshinationalcalendar.vercel.app/",
+        "name": "বাংলাদেশ বাংলা ক্যালেন্ডার",
+        "applicationCategory": "CalendarApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "isAccessibleForFree": true,
+        "inLanguage": ["bn-BD", "en"],
+        "isPartOf": {
+          "@id": "https://bangladeshinationalcalendar.vercel.app/#website"
+        },
+        "creator": {
+          "@type": "Person",
+          "name": "Saib Saleh Nabil",
+          "sameAs": [
+            "https://github.com/saibshuvro",
+            "https://www.linkedin.com/in/saib-saleh-nabil-29570b300"
+          ]
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BDT"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">মূল অংশে যান</a>
+
   <header class="navbar">
-    <button id="menu-toggle">&#9776;</button>
-    <h1>Bangladeshi National Calendar</h1>
+    <button
+      id="menu-toggle"
+      type="button"
+      aria-label="মেনু খুলুন"
+      aria-controls="sidebar"
+      aria-expanded="false"
+    >&#9776;</button>
+    <a class="site-name" href="/">বাংলাদেশ বাংলা ক্যালেন্ডার</a>
   </header>
 
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar" id="sidebar" aria-label="ক্যালেন্ডার মেনু" aria-hidden="true">
     <ul>
-      <li><a href="#" id="go-to-today">Today</a></li>
-      <li><a href="#" id="go-to-date">Go To Date</a></li>
-      <li><button id="invert-colors-btn">Change Theme</button></li>
+      <li><button type="button" id="go-to-today">আজকের তারিখ</button></li>
+      <li><button type="button" id="go-to-date">তারিখ নির্বাচন</button></li>
+      <li>
+        <button type="button" id="invert-colors-btn" aria-pressed="false">
+          রঙের ধরন বদলান
+        </button>
+      </li>
     </ul>
   </aside>
 
-  <!-- Modal -->
-  <div id="date-modal" class="modal">
+  <div
+    id="date-modal"
+    class="modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="date-modal-title"
+    aria-hidden="true"
+  >
     <div class="modal-content">
-      <span class="close">&times;</span>
-      <h2>Select a Date</h2>
+      <button class="close" type="button" aria-label="বন্ধ করুন">&times;</button>
+      <h2 id="date-modal-title">একটি ইংরেজি তারিখ নির্বাচন করুন</h2>
+      <label for="date-picker">তারিখ</label>
       <input type="date" id="date-picker">
-      <button id="go-btn">Go</button>
+      <button id="go-btn" type="button">দেখুন</button>
     </div>
   </div>
 
-  <main class="calendar-container">
-    <div class="calendar-header">
-      <button id="previous-month-btn">&lt;</button>
-      <div id="bangla-month-year" class="bangla-month-year">
-        <!-- JS will insert Bangla month and year here -->
+  <main id="main-content" class="page-shell">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="eyebrow">বাংলাদেশে প্রচলিত সংশোধিত বাংলা বর্ষপঞ্জি</p>
+      <h1 id="page-title">আজকের বাংলা তারিখ ও বাংলাদেশ বাংলা ক্যালেন্ডার</h1>
+      <p>
+        ঢাকা সময় অনুযায়ী আজকের বাংলা তারিখ দেখুন এবং আগের বা পরের বাংলা মাসে যান।
+        প্রতিটি বাংলা তারিখের সঙ্গে মিলিয়ে ইংরেজি তারিখও দেওয়া আছে।
+      </p>
+    </section>
+
+    <section class="today-panel" aria-labelledby="today-heading">
+      <h2 id="today-heading">আজকের বাংলা তারিখ</h2>
+      <p class="today-date">
+        <time id="today-bangla-date">বাংলাদেশের সময় অনুযায়ী আজকের তারিখ দেখানো হচ্ছে।</time>
+      </p>
+      <p class="today-english-date">
+        <time id="today-gregorian-date"></time>
+      </p>
+    </section>
+
+    <section class="calendar-container" aria-label="বাংলা মাসের ক্যালেন্ডার">
+      <div class="calendar-header">
+        <button id="previous-month-btn" type="button" aria-label="আগের বাংলা মাস">&lt;</button>
+        <h2 id="bangla-month-year" class="bangla-month-year">বর্তমান বাংলা মাস</h2>
+        <button id="next-month-btn" type="button" aria-label="পরের বাংলা মাস">&gt;</button>
       </div>
-      <button id="next-month-btn">&gt;</button>
-    </div>
-    <div id="english-month-year" class="english-month-year">
-      <!-- JS will insert English months and years here -->
-    </div>
-    <div class="day-names">
-      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-    </div>
-    <div class="calendar-grid" id="calendar-grid">
-      <!-- JS will populate 42 cells here -->
-    </div>
+      <p id="english-month-year" class="english-month-year"></p>
+      <div class="day-names" role="row" aria-label="সপ্তাহের দিন">
+        <div role="columnheader"><span aria-hidden="true">রবি</span><span class="visually-hidden">রবিবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">সোম</span><span class="visually-hidden">সোমবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">মঙ্গল</span><span class="visually-hidden">মঙ্গলবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">বুধ</span><span class="visually-hidden">বুধবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">বৃহস্পতি</span><span class="visually-hidden">বৃহস্পতিবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">শুক্র</span><span class="visually-hidden">শুক্রবার</span></div>
+        <div role="columnheader"><span aria-hidden="true">শনি</span><span class="visually-hidden">শনিবার</span></div>
+      </div>
+      <div
+        class="calendar-grid"
+        id="calendar-grid"
+        role="grid"
+        aria-labelledby="bangla-month-year"
+      >
+        <noscript>
+          ক্যালেন্ডারটি দেখতে JavaScript চালু করুন। আজকের বাংলা তারিখ সম্পর্কিত তথ্য নিচে পড়তে পারবেন।
+        </noscript>
+      </div>
+    </section>
 
+    <section class="content-grid" aria-label="বাংলা ক্যালেন্ডার সম্পর্কে তথ্য">
+      <article class="content-card">
+        <h2>বাংলাদেশের বাংলা ক্যালেন্ডার কেন আলাদা?</h2>
+        <p>
+          বাংলাদেশে ব্যবহৃত বাংলা বর্ষপঞ্জি একটি নির্দিষ্ট নাগরিক পদ্ধতি অনুসরণ করে। এটি
+          পশ্চিমবঙ্গে প্রচলিত জ্যোতির্বিদ্যাভিত্তিক পঞ্জিকার মতো নয়, তাই একই দিনে দুই
+          পদ্ধতির বাংলা তারিখে পার্থক্য হতে পারে। এই ক্যালেন্ডারটি বাংলাদেশের সংশোধিত
+          পদ্ধতিই অনুসরণ করে।
+        </p>
+      </article>
+
+      <article class="content-card">
+        <h2>সংশোধিত বাংলা মাসের দিনের হিসাব</h2>
+        <ul>
+          <li>বৈশাখ থেকে আশ্বিন—প্রথম ছয় মাস ৩১ দিন করে।</li>
+          <li>কার্তিক, অগ্রহায়ণ, পৌষ, মাঘ ও চৈত্র ৩০ দিন করে।</li>
+          <li>ফাল্গুন ২৯ দিন; সংশ্লিষ্ট ইংরেজি অধিবর্ষে ৩০ দিন।</li>
+          <li>বাংলা নববর্ষ বা পহেলা বৈশাখ প্রতি বছর ১৪ এপ্রিল।</li>
+        </ul>
+        <p>
+          <a href="https://www.teachers.gov.bd/content/details/493103" rel="external">
+            সংশোধিত বর্ষপঞ্জি সম্পর্কে বাংলাদেশ সরকারের শিক্ষক বাতায়নের তথ্য
+          </a>
+        </p>
+      </article>
+    </section>
+
+    <section class="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">বাংলা তারিখ নিয়ে সাধারণ প্রশ্ন</h2>
+      <details>
+        <summary>আজ বাংলা কত তারিখ?</summary>
+        <p>
+          এই পাতার “আজকের বাংলা তারিখ” অংশে ঢাকা সময় অনুযায়ী বর্তমান বাংলা দিন, মাস
+          ও সাল দেখানো হয়।
+        </p>
+      </details>
+      <details>
+        <summary>এটি কি বাংলাদেশের ক্যালেন্ডার?</summary>
+        <p>
+          হ্যাঁ। হিসাবটি বাংলাদেশে প্রচলিত ২০১৯ সালের সংশোধিত বাংলা বর্ষপঞ্জির নিয়ম
+          অনুসরণ করে; এটি পশ্চিমবঙ্গের ঐতিহ্যবাহী পঞ্জিকা নয়।
+        </p>
+      </details>
+      <details>
+        <summary>বাংলা ও ইংরেজি তারিখ একসঙ্গে কীভাবে দেখব?</summary>
+        <p>
+          ক্যালেন্ডারের প্রতিটি ঘরে বড় অক্ষরে বাংলা তারিখ এবং ছোট অক্ষরে সংশ্লিষ্ট
+          ইংরেজি তারিখ দেখানো হয়েছে। পাশের তীর ব্যবহার করে মাস পরিবর্তন করা যায়।
+        </p>
+      </details>
+    </section>
+
+    <p class="disclaimer">
+      এটি একটি স্বাধীন, বিনামূল্যের ক্যালেন্ডার প্রকল্প; বাংলাদেশ সরকারের কোনো সরকারি ওয়েবসাইট নয়।
+    </p>
   </main>
-
 
   <footer class="site-footer">
     <div class="site-footer__content">
-      <span class="footer-credit" aria-label="Credits">©</span>
+      <span class="footer-credit">
+        তৈরি করেছেন
+        <a
+          class="footer-author"
+          href="https://github.com/saibshuvro"
+          target="_blank"
+          rel="me noopener noreferrer"
+        >Saib Saleh Nabil</a>
+      </span>
       <a
         class="footer-icon"
         href="https://github.com/saibshuvro"
         target="_blank"
-        rel="noopener noreferrer"
+        rel="me noopener noreferrer"
         aria-label="GitHub"
         title="GitHub"
       >
-        <!-- GitHub SVG -->
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M12 .5C5.73.5.75 5.48.75 11.74c0 4.88 3.17 9.02 7.57 10.48.55.1.75-.24.75-.52v-1.84c-3.08.67-3.73-1.3-3.73-1.3-.5-1.27-1.22-1.61-1.22-1.61-1-.68.08-.67.08-.67 1.1.08 1.68 1.13 1.68 1.13.98 1.67 2.57 1.19 3.2.91.1-.71.38-1.19.69-1.46-2.46-.28-5.04-1.23-5.04-5.47 0-1.21.43-2.2 1.13-2.98-.12-.28-.49-1.41.1-2.94 0 0 .92-.29 3.01 1.14a10.4 10.4 0 0 1 2.74-.37c.93 0 1.87.13 2.74.37 2.09-1.43 3.01-1.14 3.01-1.14.59 1.53.22 2.66.1 2.94.7.78 1.13 1.77 1.13 2.98 0 4.25-2.58 5.19-5.05 5.46.39.34.74 1.01.74 2.04v3.02c0 .29.2.62.76.52 4.39-1.46 7.56-5.6 7.56-10.48C23.25 5.48 18.27.5 12 .5Z"
-          />
+          <path d="M12 .5C5.73.5.75 5.48.75 11.74c0 4.88 3.17 9.02 7.57 10.48.55.1.75-.24.75-.52v-1.84c-3.08.67-3.73-1.3-3.73-1.3-.5-1.27-1.22-1.61-1.22-1.61-1-.68.08-.67.08-.67 1.1.08 1.68 1.13 1.68 1.13.98 1.67 2.57 1.19 3.2.91.1-.71.38-1.19.69-1.46-2.46-.28-5.04-1.23-5.04-5.47 0-1.21.43-2.2 1.13-2.98-.12-.28-.49-1.41.1-2.94 0 0 .92-.29 3.01 1.14a10.4 10.4 0 0 1 2.74-.37c.93 0 1.87.13 2.74.37 2.09-1.43 3.01-1.14 3.01-1.14.59 1.53.22 2.66.1 2.94.7.78 1.13 1.77 1.13 2.98 0 4.25-2.58 5.19-5.05 5.46.39.34.74 1.01.74 2.04v3.02c0 .29.2.62.76.52 4.39-1.46 7.56-5.6 7.56-10.48C23.25 5.48 18.27.5 12 .5Z"/>
         </svg>
       </a>
 
@@ -74,15 +258,12 @@
         class="footer-icon"
         href="https://www.linkedin.com/in/saib-saleh-nabil-29570b300"
         target="_blank"
-        rel="noopener noreferrer"
+        rel="me noopener noreferrer"
         aria-label="LinkedIn"
         title="LinkedIn"
       >
-        <!-- LinkedIn SVG -->
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path
-            d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.62-1.85 3.33-1.85 3.56 0 4.22 2.34 4.22 5.39v6.35ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM3.56 20.45h3.56V9H3.56v11.45Z"
-          />
+          <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9h3.41v1.56h.05c.47-.9 1.62-1.85 3.33-1.85 3.56 0 4.22 2.34 4.22 5.39v6.35ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM3.56 20.45h3.56V9H3.56v11.45Z"/>
         </svg>
       </a>
     </div>

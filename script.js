@@ -1,187 +1,275 @@
-import { 
+import {
   convertToBanglaDate,
   getGregorianDateOfBanglaMonthStart,
   getNextBanglaMonthStart,
   getPreviousBanglaMonthStart,
-  getEnglishMonths,
   toBanglaName
 } from './utils.js';
 
-let currentToday;
+const BANGLADESH_TIME_ZONE = 'Asia/Dhaka';
+const THEME_STORAGE_KEY = 'calendar-theme';
+let currentCalendarDate;
+let selectedCalendarDate = null;
 
 class DateTimeBN {
   constructor(givenDate = null) {
-    // Step 1: Store BST date
-    this.captureDateTimes(givenDate);
-
-    // Step 2: Compute Bangla date using BST date
+    this.bstDate = givenDate === null ? getDhakaToday() : normalizeDate(givenDate);
     this.banglaDate = convertToBanglaDate(this.bstDate);
   }
+}
 
-  // --- Capture BST date ---
-  captureDateTimes(givenDate) {
-    if (givenDate === null) {
-      this.bstDate = new Date();
-    } else {
-      this.bstDate = new Date(givenDate);
-    }
-    console.log(this.bstDate);
+function getDhakaToday() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: BANGLADESH_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+
+  const values = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+  return new Date(Number(values.year), Number(values.month) - 1, Number(values.day), 12);
+}
+
+function normalizeDate(value) {
+  if (value instanceof Date) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate(), 12);
   }
 
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    throw new TypeError('Date must use the YYYY-MM-DD format.');
+  }
+
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
 }
 
-// --- Utility: Convert English number to Bangla ---
+function toIsoDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isSameDate(first, second) {
+  return first.getFullYear() === second.getFullYear()
+    && first.getMonth() === second.getMonth()
+    && first.getDate() === second.getDate();
+}
+
 function toBanglaNumber(number) {
   const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-  return String(number).split('').map(d => banglaDigits[d] || d).join('');
+  return String(number).split('').map((digit) => banglaDigits[digit] || digit).join('');
 }
 
-// --- Populate calendar grid ---
+function renderTodaySummary() {
+  const today = new DateTimeBN();
+  const isoDate = toIsoDate(today.bstDate);
+  const banglaDateElement = document.getElementById('today-bangla-date');
+  const gregorianDateElement = document.getElementById('today-gregorian-date');
+
+  banglaDateElement.textContent =
+    `আজ ${toBanglaNumber(today.banglaDate.day)} ${toBanglaName(today.banglaDate.month)} `
+    + `${toBanglaNumber(today.banglaDate.year)} বঙ্গাব্দ`;
+  banglaDateElement.dateTime = isoDate;
+
+  gregorianDateElement.textContent = new Intl.DateTimeFormat('bn-BD', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  }).format(today.bstDate);
+  gregorianDateElement.dateTime = isoDate;
+}
+
 function populateCalendarGrid(selectedDate = null) {
   const container = document.getElementById('calendar-grid');
-  container.innerHTML = ""; // Clear previous cells
+  container.replaceChildren();
 
-  const today = new DateTimeBN(selectedDate);
-  currentToday = today;
+  const selected = new DateTimeBN(selectedDate);
+  currentCalendarDate = selected;
 
-  // Get Gregorian date of Bangla ১ তারিখ
-  const startDate = getGregorianDateOfBanglaMonthStart(today.bstDate, today.banglaDate.month, today.banglaDate.year);
-  const startWeekday = startDate.getDay(); // 0 = Sunday, ..., 6 = Saturday
-
-  // Start from the Sunday of that week (or earlier days of previous Bangla month)
+  const startDate = getGregorianDateOfBanglaMonthStart(
+    selected.bstDate,
+    selected.banglaDate.month,
+    selected.banglaDate.year
+  );
   const calendarStartDate = new Date(startDate);
-  calendarStartDate.setDate(startDate.getDate() - startWeekday); // Go back to Sunday
+  calendarStartDate.setDate(startDate.getDate() - startDate.getDay());
 
-  let temp = [];
-  temp.push(getEnglishMonths(calendarStartDate));
-  const nextMonthDate = new Date(calendarStartDate);  // Clone the date to avoid modifying the original
-  nextMonthDate.setMonth(calendarStartDate.getMonth() + 1); // Set next month
-  temp.push(getEnglishMonths(nextMonthDate));  // Pass the new Date object
-  console.log(temp);
+  const visibleDates = [];
+  const actualToday = getDhakaToday();
+  let calendarRow;
 
-  // Render 35 calendar cells (5 weeks)
-  for (let i = 0; i < 42; i++) {
+  for (let index = 0; index < 42; index += 1) {
+    if (index % 7 === 0) {
+      calendarRow = document.createElement('div');
+      calendarRow.className = 'calendar-row';
+      calendarRow.setAttribute('role', 'row');
+      container.appendChild(calendarRow);
+    }
+
     const currentDate = new Date(calendarStartDate);
-    currentDate.setDate(calendarStartDate.getDate() + i);
+    currentDate.setDate(calendarStartDate.getDate() + index);
+    visibleDates.push(currentDate);
 
     const banglaDate = convertToBanglaDate(currentDate);
-
     const cell = document.createElement('div');
-    cell.classList.add('calendar-cell');
+    cell.className = 'calendar-cell';
+    cell.setAttribute('role', 'gridcell');
 
-    // Highlight today (optional)
-    const isToday = currentDate.toDateString() === today.bstDate.toDateString();
-    if (isToday) cell.classList.add('today');
+    if (
+      banglaDate.month !== selected.banglaDate.month
+      || banglaDate.year !== selected.banglaDate.year
+    ) {
+      cell.classList.add('outside-month');
+    }
+
+    if (isSameDate(currentDate, actualToday)) {
+      cell.classList.add('today');
+      cell.setAttribute('aria-current', 'date');
+    }
+
+    if (selectedCalendarDate && isSameDate(currentDate, selectedCalendarDate)) {
+      cell.classList.add('selected');
+      cell.setAttribute('aria-selected', 'true');
+    }
 
     const banglaDiv = document.createElement('div');
     banglaDiv.className = 'bangla-date';
-    banglaDiv.innerText = toBanglaNumber(banglaDate.day);
+    banglaDiv.textContent = toBanglaNumber(banglaDate.day);
 
-    const engDiv = document.createElement('div');
-    engDiv.className = 'english-date';
-    if (currentDate.getDate() === temp[0].days) {
-      engDiv.innerText = `${temp[0].name.slice(0, 3)} ${currentDate.getDate()}`;
-    } else if (currentDate.getDate() === 1) {
-      engDiv.innerText = `${temp[1].name.slice(0, 3)} ${currentDate.getDate()}`;
-    } else {
-      engDiv.innerText = currentDate.getDate();
-    }
+    const englishDiv = document.createElement('div');
+    englishDiv.className = 'english-date';
+    englishDiv.textContent = currentDate.getDate() === 1 || index === 0
+      ? new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(currentDate)
+      : currentDate.getDate();
 
-    cell.appendChild(banglaDiv);
-    cell.appendChild(engDiv);
-    container.appendChild(cell);
+    const gregorianLabel = new Intl.DateTimeFormat('bn-BD', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(currentDate);
+    cell.setAttribute(
+      'aria-label',
+      `${toBanglaNumber(banglaDate.day)} ${toBanglaName(banglaDate.month)} `
+      + `${toBanglaNumber(banglaDate.year)} বঙ্গাব্দ, ${gregorianLabel}`
+    );
+
+    cell.append(banglaDiv, englishDiv);
+    calendarRow.appendChild(cell);
   }
-  // Display Bangla month and year
-  const header = document.getElementById('bangla-month-year');
-  header.innerText = `${toBanglaName(today.banglaDate.month)} ${toBanglaNumber(today.banglaDate.year)}`;
 
-  const subHeader = document.getElementById('english-month-year');
-  subHeader.innerText = `${temp[0].name} ${temp[0].year} - ${temp[1].name} ${temp[1].year}`;
+  document.getElementById('bangla-month-year').textContent =
+    `${toBanglaName(selected.banglaDate.month)} ${toBanglaNumber(selected.banglaDate.year)}`;
+
+  const firstVisibleDate = visibleDates[0];
+  const lastVisibleDate = visibleDates.at(-1);
+  const englishMonthFormatter = new Intl.DateTimeFormat('en', {
+    month: 'long',
+    year: 'numeric'
+  });
+  document.getElementById('english-month-year').textContent =
+    `${englishMonthFormatter.format(firstVisibleDate)} – `
+    + englishMonthFormatter.format(lastVisibleDate);
 }
 
-// --- Toggle sidebar ---
-document.getElementById("menu-toggle").addEventListener("click", function () {
-  document.getElementById("sidebar").classList.toggle("open");
+const modal = document.getElementById('date-modal');
+const datePicker = document.getElementById('date-picker');
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menu-toggle');
+
+function setSidebar(open) {
+  sidebar.classList.toggle('open', open);
+  sidebar.setAttribute('aria-hidden', String(!open));
+  menuToggle.setAttribute('aria-expanded', String(open));
+  menuToggle.setAttribute('aria-label', open ? 'মেনু বন্ধ করুন' : 'মেনু খুলুন');
+}
+
+function setModal(open) {
+  modal.classList.toggle('is-open', open);
+  modal.setAttribute('aria-hidden', String(!open));
+
+  if (open) {
+    datePicker.focus();
+  }
+}
+
+menuToggle.addEventListener('click', () => {
+  setSidebar(!sidebar.classList.contains('open'));
 });
 
-// --- Load calendar ---
-populateCalendarGrid();
-
-
-// Modal elements
-const modal = document.getElementById("date-modal");
-const goToDate = document.getElementById("go-to-date");
-const closeBtn = document.querySelector(".close");
-const goBtn = document.getElementById("go-btn");
-const datePicker = document.getElementById("date-picker");
-const sidebar = document.getElementById("sidebar");
-const menuToggle = document.getElementById("menu-toggle");
-const goToToday = document.getElementById("go-to-today");
-
-// Open modal on click
-goToDate.addEventListener("click", (e) => {
-  e.preventDefault();
-  modal.style.display = "block";
+document.getElementById('go-to-date').addEventListener('click', () => {
+  setSidebar(false);
+  setModal(true);
 });
 
-// Close modal
-closeBtn.onclick = () => modal.style.display = "none";
+document.querySelector('.close').addEventListener('click', () => setModal(false));
 
-window.addEventListener("click", (e) => {
-  // Close modal if clicked outside
-  if (e.target === modal) {
-    modal.style.display = "none";
+window.addEventListener('click', (event) => {
+  if (event.target === modal) {
+    setModal(false);
   }
 
-  // Close sidebar if open and clicked outside
   if (
-    sidebar.classList.contains("open") &&
-    !sidebar.contains(e.target) &&
-    e.target !== menuToggle
+    sidebar.classList.contains('open')
+    && !sidebar.contains(event.target)
+    && event.target !== menuToggle
   ) {
-    sidebar.classList.remove("open");
+    setSidebar(false);
   }
 });
 
-// Handle date selection
-goBtn.addEventListener("click", () => {
-  const selectedDate = datePicker.value;
-  if (selectedDate) {
-    // alert("You selected: " + selectedDate); 
-    // Here, you can call your calendar function to go to this date
-    populateCalendarGrid(selectedDate);
-    modal.style.display = "none";
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    setModal(false);
+    setSidebar(false);
   }
 });
 
-const previousMonthBtn = document.getElementById("previous-month-btn");
-const nextMonthBtn = document.getElementById("next-month-btn");
-
-previousMonthBtn.addEventListener("click", () => {
-  populateCalendarGrid(getPreviousBanglaMonthStart(currentToday));
+document.getElementById('go-btn').addEventListener('click', () => {
+  if (datePicker.value) {
+    selectedCalendarDate = normalizeDate(datePicker.value);
+    populateCalendarGrid(selectedCalendarDate);
+    setModal(false);
+  }
 });
 
-nextMonthBtn.addEventListener("click", () => {
-  populateCalendarGrid(getNextBanglaMonthStart(currentToday));
+document.getElementById('previous-month-btn').addEventListener('click', () => {
+  populateCalendarGrid(getPreviousBanglaMonthStart(currentCalendarDate));
 });
 
-goToToday.addEventListener("click", (e) => {
-  e.preventDefault();
+document.getElementById('next-month-btn').addEventListener('click', () => {
+  populateCalendarGrid(getNextBanglaMonthStart(currentCalendarDate));
+});
 
-  // Jump to the real current date (no reload)
+document.getElementById('go-to-today').addEventListener('click', () => {
+  selectedCalendarDate = null;
   populateCalendarGrid();
-
-  // optional: close sidebar after click
-  sidebar.classList.remove("open");
+  setSidebar(false);
 });
 
+const themeButton = document.getElementById('invert-colors-btn');
+const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
+function updateThemeState() {
+  const isLight = document.documentElement.classList.contains('light-theme');
+  themeButton.setAttribute('aria-pressed', String(isLight));
+  themeColorMeta.content = isLight ? '#f4f8f5' : '#0b3d2e';
+}
 
-// Select the button and body element
-const invertColorsBtn = document.getElementById('invert-colors-btn');
-const body = document.body;  // Apply to the body element
+themeButton.addEventListener('click', () => {
+  const isLight = document.documentElement.classList.toggle('light-theme');
 
-// Event listener to toggle the 'invert-colors' class
-invertColorsBtn.addEventListener('click', () => {
-  body.classList.toggle('invert-colors');  // Toggle the class on the body
+  try {
+    sessionStorage.setItem(THEME_STORAGE_KEY, isLight ? 'light' : 'dark');
+  } catch {
+    // Theme switching still works when browser storage is unavailable.
+  }
+
+  updateThemeState();
 });
+
+updateThemeState();
+renderTodaySummary();
+populateCalendarGrid();
