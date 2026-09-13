@@ -1,0 +1,85 @@
+name: Calendar correction
+description: Report an incorrect Bangla date, rule boundary, or historical estimate
+title: "[Calendar correction]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve the Bangladesh Bangla Calendar. Please provide traceable evidence so the proposed correction can be reviewed independently.
+
+  - type: input
+    id: gregorian_date
+    attributes:
+      label: Gregorian date
+      description: Enter the affected date in YYYY-MM-DD format.
+      placeholder: "2020-02-14"
+    validations:
+      required: true
+
+  - type: input
+    id: current_result
+    attributes:
+      label: Result currently shown
+      description: Enter the Bangla year, month, and day currently displayed by the site.
+      placeholder: "1 Falgun 1426"
+    validations:
+      required: true
+
+  - type: input
+    id: expected_result
+    attributes:
+      label: Expected result
+      description: Enter the Bangla year, month, and day you believe should be displayed.
+      placeholder: "Expected Bangla date"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: calculation_period
+    attributes:
+      label: Calculation period
+      description: Select the period containing the affected date.
+      options:
+        - Estimated pre-1987 result (1947-04-14 through 1987-04-13)
+        - Original standardized rule (1987-04-14 through 1995-04-13)
+        - 1402 reform rule (1995-04-14 through 2019-04-13)
+        - Current 1426 rule (from 2019-04-14)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: correction_type
+    attributes:
+      label: Type of correction
+      options:
+        - Standardized calendar calculation
+        - Historically observed date
+        - Supported-range or warning problem
+        - Calendar navigation problem
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: Provide source links, publication titles, page numbers, or details about an archival scan. Explain how the source supports the expected date.
+      placeholder: "Source URL or publication details and relevant explanation"
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add screenshots, browser details, or anything else that may help reproduce the problem.
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: I understand that dates before 1987-04-14 are explicitly estimated and may differ from historically observed dates.
+          required: true
+        - label: I have searched existing issues for the same correction.
+          required: true

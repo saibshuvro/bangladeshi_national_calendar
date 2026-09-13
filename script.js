@@ -1,8 +1,11 @@
 import {
+  EARLIEST_SUPPORTED_BANGLA_YEAR,
+  EARLIEST_SUPPORTED_GREGORIAN_DATE,
   convertToBanglaDate,
   getGregorianDateOfBanglaMonthStart,
   getNextBanglaMonthStart,
   getPreviousBanglaMonthStart,
+  isEstimatedBanglaDate,
   toBanglaName
 } from './utils.js';
 
@@ -112,10 +115,18 @@ function populateCalendarGrid(selectedDate = null) {
     currentDate.setDate(calendarStartDate.getDate() + index);
     visibleDates.push(currentDate);
 
-    const banglaDate = convertToBanglaDate(currentDate);
     const cell = document.createElement('div');
     cell.className = 'calendar-cell';
     cell.setAttribute('role', 'gridcell');
+
+    if (toIsoDate(currentDate) < EARLIEST_SUPPORTED_GREGORIAN_DATE) {
+      cell.classList.add('outside-month', 'unsupported-date');
+      cell.setAttribute('aria-disabled', 'true');
+      calendarRow.appendChild(cell);
+      continue;
+    }
+
+    const banglaDate = convertToBanglaDate(currentDate);
 
     if (
       banglaDate.month !== selected.banglaDate.month
@@ -150,10 +161,13 @@ function populateCalendarGrid(selectedDate = null) {
       month: 'long',
       year: 'numeric'
     }).format(currentDate);
+    const estimateQualifier = isEstimatedBanglaDate(currentDate)
+      ? ', আনুমানিক ঐতিহাসিক হিসাব'
+      : '';
     cell.setAttribute(
       'aria-label',
       `${toBanglaNumber(banglaDate.day)} ${toBanglaName(banglaDate.month)} `
-      + `${toBanglaNumber(banglaDate.year)} বঙ্গাব্দ, ${gregorianLabel}`
+      + `${toBanglaNumber(banglaDate.year)} বঙ্গাব্দ, ${gregorianLabel}${estimateQualifier}`
     );
 
     cell.append(banglaDiv, englishDiv);
@@ -172,12 +186,22 @@ function populateCalendarGrid(selectedDate = null) {
   document.getElementById('english-month-year').textContent =
     `${englishMonthFormatter.format(firstVisibleDate)} – `
     + englishMonthFormatter.format(lastVisibleDate);
+
+  historicalEstimateWarning.hidden = !isEstimatedBanglaDate(selected.bstDate);
+
+  previousMonthButton.disabled =
+    selected.banglaDate.year === EARLIEST_SUPPORTED_BANGLA_YEAR
+    && selected.banglaDate.month === 'Boishakh';
 }
 
 const modal = document.getElementById('date-modal');
 const datePicker = document.getElementById('date-picker');
 const sidebar = document.getElementById('sidebar');
 const menuToggle = document.getElementById('menu-toggle');
+const previousMonthButton = document.getElementById('previous-month-btn');
+const historicalEstimateWarning = document.getElementById('historical-estimate-warning');
+
+datePicker.min = EARLIEST_SUPPORTED_GREGORIAN_DATE;
 
 function setSidebar(open) {
   sidebar.classList.toggle('open', open);
@@ -228,14 +252,21 @@ window.addEventListener('keydown', (event) => {
 });
 
 document.getElementById('go-btn').addEventListener('click', () => {
-  if (datePicker.value) {
-    selectedCalendarDate = normalizeDate(datePicker.value);
-    populateCalendarGrid(selectedCalendarDate);
-    setModal(false);
+  if (!datePicker.value) {
+    return;
   }
+
+  if (!datePicker.checkValidity()) {
+    datePicker.reportValidity();
+    return;
+  }
+
+  selectedCalendarDate = normalizeDate(datePicker.value);
+  populateCalendarGrid(selectedCalendarDate);
+  setModal(false);
 });
 
-document.getElementById('previous-month-btn').addEventListener('click', () => {
+previousMonthButton.addEventListener('click', () => {
   populateCalendarGrid(getPreviousBanglaMonthStart(currentCalendarDate));
 });
 
