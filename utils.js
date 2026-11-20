@@ -25,6 +25,22 @@ const BANGLA_MONTH_NAMES = {
   Chaitro: 'চৈত্র'
 };
 
+// Each season (ঋতু/কাল) spans two consecutive Bangla months.
+const BANGLA_SEASONS = {
+  Boishakh: 'গ্রীষ্মকাল',
+  Joishtho: 'গ্রীষ্মকাল',
+  Ashar: 'বর্ষাকাল',
+  Srabon: 'বর্ষাকাল',
+  Bhadro: 'শরৎকাল',
+  Ashwin: 'শরৎকাল',
+  Kartik: 'হেমন্তকাল',
+  Ogrohayon: 'হেমন্তকাল',
+  Poush: 'শীতকাল',
+  Magh: 'শীতকাল',
+  Falgun: 'বসন্তকাল',
+  Chaitro: 'বসন্তকাল'
+};
+
 function toUtcDayNumber(date) {
   return Math.floor(
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MILLISECONDS_PER_DAY
@@ -226,4 +242,8 @@ export function getPreviousBanglaMonthStart(dateTimeBN) {
 
 export function toBanglaName(banglaMonthName) {
   return BANGLA_MONTH_NAMES[banglaMonthName];
+}
+
+export function getBanglaSeason(banglaMonthName) {
+  return BANGLA_SEASONS[banglaMonthName];
 }

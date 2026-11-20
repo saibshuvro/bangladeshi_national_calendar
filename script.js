@@ -4,6 +4,7 @@ import {
   convertToBanglaDate,
   getGregorianDateOfBanglaMonthStart,
   getNextBanglaMonthStart,
+  getBanglaSeason,
   getPreviousBanglaMonthStart,
   isEstimatedBanglaDate,
   toBanglaName
@@ -72,7 +73,8 @@ function renderTodaySummary() {
 
   banglaDateElement.textContent =
     `আজ ${toBanglaNumber(today.banglaDate.day)} ${toBanglaName(today.banglaDate.month)} `
-    + `${toBanglaNumber(today.banglaDate.year)} বঙ্গাব্দ`;
+    + `${toBanglaNumber(today.banglaDate.year)} বঙ্গাব্দ, `
+    + getBanglaSeason(today.banglaDate.month);
   banglaDateElement.dateTime = isoDate;
 
   gregorianDateElement.textContent = new Intl.DateTimeFormat('bn-BD', {
